@@ -1,11 +1,11 @@
 'use client';
 
-import { useFormState, useFormStatus } from 'react-dom';
+import { useFormStatus } from 'react-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { useEffect } from 'react';
-import { AlertTriangle, CheckCircle, Loader2, ShieldCheck, ShieldX } from 'lucide-react';
+import { useEffect, useActionState } from 'react';
+import { AlertTriangle, CheckCircle, Loader2, ShieldCheck } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -36,7 +36,7 @@ function SubmitButton() {
 
 export function NulledDetectorForm() {
   const { toast } = useToast();
-  const [state, formAction] = useFormState(checkNulledLicenseAction, null);
+  const [state, formAction] = useActionState(checkNulledLicenseAction, null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
