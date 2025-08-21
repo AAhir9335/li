@@ -5,8 +5,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { format } from 'date-fns';
-import { Calendar as CalendarIcon, Loader2, Plus, RefreshCw } from 'lucide-react';
+import { Plus, Save, X } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -17,6 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogClose,
 } from '@/components/ui/dialog';
 import {
   Form,
@@ -28,24 +28,21 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Calendar } from '@/components/ui/calendar';
-import { cn } from '@/lib/utils';
+import { Switch } from '@/components/ui/switch';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/hooks/use-toast';
-import { Textarea } from '../ui/textarea';
 
 const formSchema = z.object({
-  product: z.string().min(1, 'Product is required.'),
-  licenseKey: z.string().min(1, 'License key is required.'),
-  status: z.enum(['active', 'inactive']),
-  activationLimit: z.coerce.number().min(0, 'Activation limit must be 0 or more.'),
-  verificationLimit: z.coerce.number().min(0, 'Verification limit must be 0 or more.'),
-  domains: z.string().optional(),
-  expiresAt: z.date().optional(),
+  licenseTitle: z.string().min(1, 'License title is required.'),
+  enableExpiry: z.boolean().default(false),
+  expiryDays: z.coerce.number().optional(),
+  support: z.enum(['none', 'unlimited', 'days']).default('none'),
+  supportDays: z.coerce.number().optional(),
+  extraParam: z.string().optional(),
+  maxDomain: z.coerce.number().min(0, 'Max domains must be 0 or more.'),
+  verificationRequired: z.string().optional(),
+  status: z.boolean().default(true),
 });
-
-const products = ['Pro Widgets', 'Super Forms', 'Mega Slider', 'Ultimate CRM'];
 
 export function AddLicenseDialog() {
   const [open, setOpen] = useState(false);
@@ -54,42 +51,31 @@ export function AddLicenseDialog() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      product: '',
-      licenseKey: '',
-      status: 'active',
-      activationLimit: 1,
-      verificationLimit: 1,
-      domains: '',
+      licenseTitle: 'Annual',
+      enableExpiry: true,
+      expiryDays: 365,
+      support: 'days',
+      supportDays: 365,
+      extraParam: '',
+      maxDomain: 1,
+      verificationRequired: '',
+      status: true,
     },
   });
 
-  const generateLicenseKey = () => {
-    const prefix = 'LS';
-    const parts = Array(4)
-      .fill(0)
-      .map(() =>
-        Math.random()
-          .toString(36)
-          .substring(2, 6)
-          .toUpperCase()
-      );
-    return `${prefix}-${parts.join('-')}`;
-  };
-
-  const handleGenerateClick = () => {
-    form.setValue('licenseKey', generateLicenseKey());
-  };
-
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     // In a real app, you would handle form submission to your backend here.
-    console.log('New license created:', values);
+    console.log('New license type created:', values);
     toast({
-      title: 'License Created',
-      description: `A new license for ${values.product} has been successfully created.`,
+      title: 'License Type Created',
+      description: `A new license type "${values.licenseTitle}" has been successfully created.`,
     });
     setOpen(false);
     form.reset();
   };
+  
+  const enableExpiry = form.watch('enableExpiry');
+  const support = form.watch('support');
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -99,162 +85,175 @@ export function AddLicenseDialog() {
           Add License
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[525px]">
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Add New License</DialogTitle>
-          <DialogDescription>
-            Manually create a new license with custom parameters.
-          </DialogDescription>
+          <DialogTitle>Add License Type</DialogTitle>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4 py-4">
-            <FormField
-              control={form.control}
-              name="product"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Product</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a product" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {products.map((product) => (
-                        <SelectItem key={product} value={product}>
-                          {product}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="licenseKey"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>License Key</FormLabel>
-                  <div className="flex gap-2">
-                    <FormControl>
-                      <Input placeholder="e.g., LS-ABCD-1234-EFGH-5678" {...field} />
-                    </FormControl>
-                    <Button type="button" variant="outline" size="icon" onClick={handleGenerateClick}>
-                      <RefreshCw className="h-4 w-4" />
-                      <span className="sr-only">Generate Key</span>
-                    </Button>
-                  </div>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-             <div className="grid grid-cols-2 gap-4">
-                <FormField
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              <FormField
                 control={form.control}
-                name="activationLimit"
+                name="licenseTitle"
                 render={({ field }) => (
-                    <FormItem>
-                    <FormLabel>Activation Limit</FormLabel>
+                  <FormItem>
+                    <FormLabel>License Title</FormLabel>
                     <FormControl>
-                        <Input type="number" placeholder="1" {...field} />
+                      <Input {...field} />
                     </FormControl>
                     <FormMessage />
-                    </FormItem>
+                  </FormItem>
                 )}
-                />
-                <FormField
+              />
+              <FormField
                 control={form.control}
-                name="verificationLimit"
+                name="enableExpiry"
                 render={({ field }) => (
-                    <FormItem>
-                    <FormLabel>Verification Limit</FormLabel>
-                    <FormControl>
-                        <Input type="number" placeholder="1" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                    </FormItem>
+                  <FormItem>
+                    <FormLabel>Enable Expiry & Days</FormLabel>
+                    <div className="flex items-center gap-2">
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                      <FormField
+                        control={form.control}
+                        name="expiryDays"
+                        render={({ field: expiryField }) => (
+                          <FormItem className="flex-1">
+                            <FormControl>
+                              <Input type="number" {...expiryField} disabled={!enableExpiry} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </FormItem>
                 )}
-                />
+              />
             </div>
+            
             <FormField
               control={form.control}
-              name="domains"
+              name="support"
+              render={({ field }) => (
+                <FormItem className="space-y-3">
+                  <FormLabel>Has Support & Days</FormLabel>
+                  <div className="flex items-center gap-2">
+                    <FormControl>
+                      <RadioGroup
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                        className="flex items-center space-x-4"
+                      >
+                        <FormItem className="flex items-center space-x-2 space-y-0">
+                          <FormControl>
+                            <RadioGroupItem value="none" />
+                          </FormControl>
+                          <FormLabel className="font-normal">No Support</FormLabel>
+                        </FormItem>
+                        <FormItem className="flex items-center space-x-2 space-y-0">
+                          <FormControl>
+                            <RadioGroupItem value="unlimited" />
+                          </FormControl>
+                          <FormLabel className="font-normal">Unlimited</FormLabel>
+                        </FormItem>
+                        <FormItem className="flex items-center space-x-2 space-y-0">
+                          <FormControl>
+                            <RadioGroupItem value="days" />
+                          </FormControl>
+                          <FormLabel className="font-normal">Day Interval</FormLabel>
+                        </FormItem>
+                      </RadioGroup>
+                    </FormControl>
+                    <FormField
+                      control={form.control}
+                      name="supportDays"
+                      render={({ field: supportDaysField }) => (
+                        <FormItem className="w-48">
+                          <FormControl>
+                            <Input type="number" {...supportDaysField} disabled={support !== 'days'} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="extraParam"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Allowed Domains</FormLabel>
+                  <FormLabel>Extra Param</FormLabel>
                   <FormControl>
-                    <Textarea placeholder="example.com, another-site.org" {...field} />
+                    <Input placeholder="Extra Param" {...field} />
                   </FormControl>
-                  <FormDescription>
-                    Comma-separated list of domains. Leave blank for no restriction.
-                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <div className="grid grid-cols-2 gap-4">
+            
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+              <FormField
+                control={form.control}
+                name="maxDomain"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Max Domain</FormLabel>
+                    <FormControl>
+                      <Input type="number" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="verificationRequired"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Verification Required</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Verification Required" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               <FormField
                 control={form.control}
                 name="status"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Status</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select status" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="active">Active</SelectItem>
-                        <SelectItem value="inactive">Inactive</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="expiresAt"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel>Expires At (Optional)</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant={'outline'}
-                            className={cn(
-                              'w-full pl-3 text-left font-normal',
-                              !field.value && 'text-muted-foreground'
-                            )}
-                          >
-                            {field.value ? format(field.value, 'PPP') : <span>Pick a date</span>}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          initialFocus
+                    <FormControl>
+                       <div className="flex items-center pt-2">
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
                         />
-                      </PopoverContent>
-                    </Popover>
-                    <FormMessage />
+                       </div>
+                    </FormControl>
                   </FormItem>
                 )}
               />
             </div>
-            <DialogFooter>
-              <Button type="submit">
-                Create License
+            
+            <DialogFooter className="pt-4">
+              <DialogClose asChild>
+                <Button type="button" variant="destructive">
+                  <X /> Cancel
+                </Button>
+              </DialogClose>
+              <Button type="submit" variant="default">
+                <Save /> Save
               </Button>
             </DialogFooter>
           </form>
