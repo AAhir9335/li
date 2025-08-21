@@ -9,6 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { AddLicenseDialog } from '@/components/dashboard/add-license-dialog';
 
 export default function DashboardPage() {
   return (
@@ -32,10 +33,7 @@ export default function DashboardPage() {
               <Download className="mr-2 h-4 w-4" />
               Export
             </Button>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              Add License
-            </Button>
+            <AddLicenseDialog />
           </div>
         </CardHeader>
         <CardContent>
