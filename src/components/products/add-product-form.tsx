@@ -25,8 +25,8 @@ const formSchema = z.object({
   productSlug: z.string().min(1, 'Product base/slug is required.'),
   status: z.boolean().default(true),
   requestEncryption: z.string().optional(),
-  autoGenerateEncryption: z.boolean().default(false),
-  renewLink: z.string().url('Please enter a valid URL.').optional().or(z.literal('')),
+  autoGenerateEncryption: z.boolean().default(true),
+  renewLink: z.string().url({ message: "Please enter a valid URL." }).optional().or(z.literal('')),
   checkExpiry: z.boolean().default(false),
   encryptResponse: z.boolean().default(false),
 });
@@ -56,6 +56,8 @@ export function AddProductForm() {
       description: `The product "${values.productName}" has been successfully created.`,
     });
   };
+  
+  const autoGenerate = form.watch('autoGenerateEncryption');
 
   return (
     <Form {...form}>
@@ -99,7 +101,7 @@ export function AddProductForm() {
                     />
                   </div>
                   <FormControl>
-                    <Input placeholder="Request Encryption" {...field} />
+                    <Input placeholder="Request Encryption" {...field} disabled={autoGenerate} />
                   </FormControl>
                    <FormDescription className="text-green-600">
                     ! By this key all active/deactive request between this license server and your app will be encrypted.
@@ -176,7 +178,7 @@ export function AddProductForm() {
                 <FormItem>
                   <FormLabel>Renew Link</FormLabel>
                   <FormControl>
-                    <Input placeholder="Renew Link" {...field} />
+                    <Input placeholder="https://your-domain.com/renew" {...field} />
                   </FormControl>
                   <FormDescription>
                     Your product will show a button for renew License or support, if you enter a link here.
