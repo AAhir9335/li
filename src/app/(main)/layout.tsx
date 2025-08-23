@@ -14,7 +14,8 @@ import {
   Download,
   Settings,
   UserCircle,
-  ShieldAlert
+  ShieldAlert,
+  Code
 } from 'lucide-react';
 
 import {
@@ -70,6 +71,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       href: '/nulled-detector',
       label: 'AI Nulled Detector',
       icon: ShieldAlert,
+    },
+    {
+      href: '/code-generator',
+      label: 'AI Code Generator',
+      icon: Code,
     },
     {
       href: '#',
