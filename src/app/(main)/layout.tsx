@@ -13,7 +13,8 @@ import {
   ShoppingCart,
   Download,
   Settings,
-  UserCircle 
+  UserCircle,
+  ShieldAlert
 } from 'lucide-react';
 
 import {
@@ -64,6 +65,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       href: '#',
       label: 'Reports',
       icon: LineChart,
+    },
+    {
+      href: '/nulled-detector',
+      label: 'AI Nulled Detector',
+      icon: ShieldAlert,
     },
     {
       href: '#',
