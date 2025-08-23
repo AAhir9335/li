@@ -49,7 +49,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       badge: '248',
     },
     {
-      href: '#',
+      href: '/products',
       label: 'Products',
       icon: Package,
       badge: '12',
