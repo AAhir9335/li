@@ -12,6 +12,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { GenerateScriptDialog } from '@/components/products/generate-script-dialog';
 
 const products = [
   {
@@ -90,9 +91,7 @@ export default function ProductsPage() {
                     <Button variant="outline" size="sm" className="bg-blue-500 text-white hover:bg-blue-600 hover:text-white">
                       <Edit className="mr-1 h-4 w-4" /> Edit
                     </Button>
-                     <Button variant="outline" size="sm" className="bg-green-500 text-white hover:bg-green-600 hover:text-white">
-                      <Cog className="mr-1 h-4 w-4" /> Generate License Script
-                    </Button>
+                     <GenerateScriptDialog product={product} />
                     <Button variant="destructive" size="sm">
                       <Trash2 className="mr-1 h-4 w-4" /> Delete
                     </Button>
