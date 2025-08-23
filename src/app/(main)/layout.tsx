@@ -73,7 +73,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     },
     {
       href: '/code-generator',
-      label: 'Generate License Script',
+      label: 'AI Code Generator',
       icon: Code,
     },
     {
