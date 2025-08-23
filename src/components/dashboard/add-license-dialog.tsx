@@ -11,17 +11,15 @@ import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
   DialogClose,
+  DialogFooter,
 } from '@/components/ui/dialog';
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -80,9 +78,9 @@ export function AddLicenseDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" />
-          Add License
+        <Button className="w-full justify-start p-4 h-auto text-base">
+          <Plus className="mr-3 h-5 w-5" />
+          Create New License
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-2xl">
