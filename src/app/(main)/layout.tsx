@@ -44,7 +44,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       icon: LayoutDashboard,
     },
     {
-      href: '#',
+      href: '/licenses',
       label: 'Licenses',
       icon: Tag,
       badge: '248',
